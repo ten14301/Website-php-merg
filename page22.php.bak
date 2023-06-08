@@ -1,0 +1,74 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+</head>
+<title>freelance</title>
+<style>
+	body{
+	background-color:Cornsilk;
+	}
+	
+	a {
+	text-decoration: none;
+	display: inline-block;
+	padding: 8px 16px;
+	}
+
+	a:hover {
+	background-color: #ddd;
+	color: black;
+	}
+	.next {
+	background-color: #FFA07A;
+	color: white;
+	}
+	.job{
+		width: 100%;
+		height: 500px;
+		padding: 20px;
+		margin-bottom: 4px;
+		background-color: white;
+		border-radius: 4px;
+		box-shadow: 5px 3px;
+		top: 50%;
+		left: 50%;
+		margin-left: 25%;
+		margin-top: 5%;
+		font-size: 150%;
+		
+	}
+
+
+
+	
+</style>
+<body>
+
+<a href="guestbook3.php" class="next">โพสต์จ้างงาน</a><br>
+
+
+
+</body>
+</html>
+<?php
+	$conn = mysqli_connect("localhost","t63301280024","26122543","db6424");
+
+
+	$select  = "select * from  toppic order by id desc";
+	
+	$result= mysqli_query($conn, $select );
+	while($row = mysqli_fetch_assoc($result)){
+		echo "<div class = 'job'>";
+		echo   อีเมลล์.": &nbsp";
+		echo $row['email']."&nbsp&nbsp";
+		echo   หัวข้อ.": &nbsp";
+		echo $row['toppic']."<br><br>";
+		echo $row['text']."<br><br>";
+		echo "</div>";
+	}
+
+	
+	
+?>

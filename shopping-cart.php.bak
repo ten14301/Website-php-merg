@@ -1,0 +1,172 @@
+<?php
+error_reporting(0);
+//Setting session start
+session_start();
+
+$total=0;
+
+//Database connection, replace with your connection string.. Used PDO
+$conn = new PDO("mysql:host=localhost;dbname=upload", 'root', 'password');		
+$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+
+//get action string
+$action = isset($_GET['action'])?$_GET['action']:"";
+
+//Add to cart
+if($action=='addcart' && $_SERVER['REQUEST_METHOD']=='POST') {
+	
+	//Finding the product by code
+	$query = "SELECT * FROM products WHERE sku=:sku";
+	$stmt = $conn->prepare($query);
+	$stmt->bindParam('sku', $_POST['sku']);
+	$stmt->execute();
+	$product = $stmt->fetch();
+	
+	$currentQty = $_SESSION['products'][$_POST['sku']]['qty']+1; //Incrementing the product qty in cart
+	$_SESSION['products'][$_POST['sku']] =array('qty'=>$currentQty,'name'=>$product['name'],'image'=>$product['image'],'price'=>$product['price']);
+	$product='';
+	header("Location:shopping-cart.php");
+}
+
+//Empty All
+if($action=='emptyall') {
+	$_SESSION['products'] =array();
+	header("Location:shopping-cart.php");	
+}
+
+//Empty one by one
+if($action=='empty') {
+	$sku = $_GET['sku'];
+	$products = $_SESSION['products'];
+	unset($products[$sku]);
+	$_SESSION['products']= $products;
+	header("Location:shopping-cart.php");	
+}
+
+
+ 
+ 
+ //Get all Products
+$query = "SELECT * FROM products";
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$products = $stmt->fetchAll();
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตะกร้าสินค้า</title>
+
+
+</head>
+<style>
+*{
+	
+	text-align: center;
+	align: center;
+}
+.container{
+	margin-left: auto;
+	margin-right: auto;
+	
+}
+a{
+	text-decoration:none;
+	background-color: #FAEBD7;
+	color: #333333;
+	padding: 2px 6px 2px 6px;
+	border-top: 1px solid #CCCCCC;
+	border-right: 1px solid #333333;
+	border-bottom: 1px solid #333333;
+	border-left: 1px solid #CCCCCC;
+	border-radius: 5px;
+}
+a:hover{
+	background-color:#5F9EA0;
+	
+}
+button{
+	text-decoration:none;
+	background-color: #FAEBD7;
+	color: #333333;
+	padding: 2px 6px 2px 6px;
+	border-top: 1px solid #CCCCCC;
+	border-right: 1px solid #333333;
+	border-bottom: 1px solid #333333;
+	border-left: 1px solid #CCCCCC;
+	border-radius: 5px;
+	
+}
+button:hover{
+	background-color:#5F9EA0;
+}
+
+
+</style>
+<body>
+<div class="container" style="width:100%">
+  <?php if(!empty($_SESSION['products'])):?>
+  <nav style="background:#F08080;">
+    <div style="width:100%;">
+      <div> <p style="color:#FFFFFF;">ตะกร้า</p> </div>
+    </div>
+    
+  </nav>
+  <table class="container">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <?php foreach($_SESSION['products'] as $key=>$product):?>
+    <tr>
+      <td><img src="<?php print $product['image']?>" width="50"></td>
+      <td><?php print $product['name']?></td>
+      <td>$<?php print $product['price']?></td>
+      <td><?php print $product['qty']?></td>
+      <td><a href="shopping-cart.php?action=empty&sku=<?php print $key?>">ลบ</a></td>
+    </tr>
+    <?php $total = $total+$product['price'];?>
+    <?php endforeach;?>
+    <tr><td colspan="5" align="right"><h4>รวม:<?php print $total?>บาท</h4></td></tr>
+	<div  style="text-align: right;"><a class = "empty" href="shopping-cart.php?action=emptyall">ล้างตะกร้า</a></div>
+  </table>
+  <?php endif;?>
+  <nav  style="background:#F08080;">
+    <div>
+      <div > <p style="color:#FFFFFF;">สินค้า</p> </div>
+    </div>
+  </nav>
+  <div>
+    <div class="container" style="width:600px;">
+      <?php foreach($products as $product):?>
+      <div >
+        <div > <img src="<?php print $product['image']?>" alt="Lights">
+          <div >
+            <p style="text-align:center;"><?php print $product['name']?></p>
+            <p style="text-align:center;color: black;"><b><?php print $product['price']?>บาท</b></p>
+            <form method="post" action="shopping-cart.php?action=addcart">
+              <p style="text-align:center;color:#04B745;">
+                <button type="submit">เพิ่มลงตะกร้า</button>
+                <input type="hidden" name="sku" value="<?php print $product['sku']?>">
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+      <?php endforeach;?>
+    </div>
+  </div>
+</div>
+</body>
+</html>
